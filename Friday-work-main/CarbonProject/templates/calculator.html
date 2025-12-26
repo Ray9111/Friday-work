@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日常碳排試算</title>
+    <style>
+        /* 直接寫入 CSS，讓畫面變漂亮 */
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 400px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        p { color: #666; font-size: 0.9em; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        
+        /* 結果顯示區 */
+        #result-area { display: none; margin-top: 25px; padding: 15px; background-color: #e9f7ef; border-radius: 5px; border-left: 5px solid #28a745; }
+        #result-area h3 { margin-top: 0; color: #2c3e50; }
+        .score { font-size: 1.5em; color: #d9534f; font-weight: bold; }
+        
+        .nav-links { margin-top: 20px; text-align: center; font-size: 0.9em; }
+        .nav-links a { margin: 0 10px; color: #007bff; text-decoration: none; }
+        .nav-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📊 日常碳排試算</h2>
+        <p>輸入您的日常活動數據，系統將自動計算今日產生的碳足跡並存入資料庫。</p>
+
+        <div class="form-group">
+            <label>🏠 今日用電量 (度)：</label>
+            <input type="number" id="elec" placeholder="例如：5">
+        </div>
+
+        <div class="form-group">
+            <label>🛵 機車騎乘距離 (公里)：</label>
+            <input type="number" id="transport" placeholder="例如：10">
+        </div>
+
+        <button onclick="calculate()">開始計算</button>
+
+        <div id="result-area">
+            <h3>計算結果：</h3>
+            <p>總碳排放量：<span id="score" class="score">0</span> kgCO2e</p>
+            <p>💡 <strong>AI 建議：</strong><span id="advice"></span></p>
+        </div>
+        
+        <div class="nav-links">
+            <a href="/">⬅️ 回首頁找 AI 聊天</a> | 
+            <a href="/history">📜 查看歷史紀錄</a>
+        </div>
+    </div>
+
+    <script>
+        async function calculate() {
+            // 1. 抓取輸入框的值
+            const elec = document.getElementById('elec').value;
+            const transport = document.getElementById('transport').value;
+
+            // 簡單防呆：如果不輸入當作 0
+            if(elec === "" && transport === "") {
+                alert("請至少輸入一項數據！");
+                return;
+            }
+
+            const payload = {
+                electricity: elec || 0,
+                transport: transport || 0
+            };
+
+            // 2. 使用 fetch 呼叫後端 API
+            try {
+                const response = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 3. 顯示結果區域
+                    const resultArea = document.getElementById('result-area');
+                    resultArea.style.display = 'block';
+                    
+                    document.getElementById('score').innerText = data.total;
+                    document.getElementById('advice').innerText = data.advice;
+                } else {
+                    alert('計算錯誤：' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('連線失敗，請檢查後端伺服器是否開啟');
+            }
+        }
+    </script>
+
+</body>
+</html>

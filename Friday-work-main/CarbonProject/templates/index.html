@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 碳排放資訊站</title>
+    <style>
+        /* 這裡直接寫 CSS 樣式，解決讀不到檔案的問題 */
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 400px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; }
+        .chat-box { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; background: #fafafa; border-radius: 5px; }
+        .message { margin: 10px 0; padding: 8px 12px; border-radius: 15px; max-width: 80%; display: inline-block; }
+        .user-message { background-color: #dcf8c6; float: right; clear: both; text-align: left; }
+        .bot-message { background-color: #e8e8e8; float: left; clear: both; text-align: left; }
+        .input-area { display: flex; margin-top: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px 0 0 5px; outline: none; }
+        button { padding: 10px 20px; border: none; background-color: #28a745; color: white; cursor: pointer; border-radius: 0 5px 5px 0; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        .nav-buttons { text-align: center; margin-bottom: 15px; }
+        .nav-buttons a { text-decoration: none; color: #555; margin: 0 10px; font-size: 0.9em; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🌱 減碳一下</h1>
+            <div class="nav-buttons">
+                <a href="/calculator">📊 前往碳排計算機</a> |
+                <a href="/history">📜 查看歷史紀錄</a>
+            </div>
+        </header>
+
+        <div id="chat-box" class="chat-box clearfix">
+            <div class="message bot-message">
+                你好！我是你的減碳小幫手。你可以問我關於「碳足跡」、「牛肉」、「冷氣」或「交通」的問題喔！
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="請輸入問題...">
+            <button onclick="sendMessage()">發送</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const inputField = document.getElementById("user-input");
+            const chatBox = document.getElementById("chat-box");
+            const message = inputField.value;
+
+            if (message.trim() === "") return;
+
+            // 1. 顯示使用者的訊息
+            chatBox.innerHTML += `<div class="message user-message"><strong>我:</strong> ${message}</div><div class="clearfix"></div>`;
+            inputField.value = ""; // 清空輸入框
+            chatBox.scrollTop = chatBox.scrollHeight; // 捲動到底部
+
+            // 2. 發送給 Flask 後端
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // 3. 顯示 AI 的回覆
+                if (data.reply) {
+                    chatBox.innerHTML += `<div class="message bot-message"><strong>AI:</strong> ${data.reply}</div><div class="clearfix"></div>`;
+                } else {
+                    chatBox.innerHTML += `<div class="message bot-message" style="color:red">發生錯誤</div><div class="clearfix"></div>`;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                chatBox.innerHTML += `<div class="message bot-message" style="color:red">連線失敗</div><div class="clearfix"></div>`;
+            }
+            // 再次捲動到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 讓按 Enter 也能發送
+        document.getElementById("user-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>

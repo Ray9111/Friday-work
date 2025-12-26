@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>碳排歷史紀錄</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+        .container { width: 600px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .nav-links { margin-top: 20px; text-align: center; }
+        .nav-links a { margin: 0 10px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📜 您的碳排追蹤紀錄</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期時間</th>
+                    <th>用電 (度)</th>
+                    <th>交通 (km)</th>
+                    <th>總碳排 (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ record.electricity }}</td>
+                    <td>{{ record.transport }}</td>
+                    <td style="color: #d9534f; font-weight: bold;">{{ record.total_co2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="nav-links">
+            <a href="/calculator">⬅️ 回去計算</a> | 
+            <a href="/">🏠 回首頁</a>
+        </div>
+    </div>
+</body>
+</html>
